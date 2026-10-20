@@ -1,0 +1,1327 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Palavra do dia</title>
+  <style>
+    :root {
+      --page: #f3efe4;
+      --surface: #fffdf8;
+      --surface-quiet: #ede7dc;
+      --ink: #25332d;
+      --muted: #5f6d66;
+      --line: #cdc8bc;
+      --accent: #b74e35;
+      --correct: #2e6e4f;
+      --present: #e1b85d;
+      --absent: #dadad2;
+      --focus: #1265a8;
+      --shadow: 0 14px 34px rgba(26, 35, 31, 0.09);
+      --tile-radius: 10px;
+      --panel-radius: 12px;
+      --field-radius: 8px;
+      --body-font: "Segoe UI", Tahoma, sans-serif;
+      --display-font: Georgia, "Times New Roman", serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      background: var(--page);
+      color: var(--ink);
+      font-family: var(--body-font);
+    }
+
+    body {
+      min-width: 320px;
+      background-image: repeating-linear-gradient(
+        0deg,
+        rgba(48, 61, 54, 0.02),
+        rgba(48, 61, 54, 0.02) 1px,
+        transparent 1px,
+        transparent 28px
+      );
+    }
+
+    button, input, textarea {
+      font: inherit;
+    }
+
+    button:focus-visible,
+    input:focus-visible,
+    textarea:focus-visible,
+    [role="button"]:focus-visible {
+      outline: 3px solid var(--focus);
+      outline-offset: 3px;
+    }
+
+    .app {
+      width: min(1120px, calc(100% - 28px));
+      margin: 0 auto;
+      padding: 26px 0 32px;
+    }
+
+    .masthead {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .brand-mark {
+      width: 46px;
+      height: 46px;
+      display: grid;
+      place-items: center;
+      border-radius: 10px;
+      background: var(--accent);
+      color: #fff;
+      font-size: 24px;
+      font-weight: 800;
+      font-family: var(--display-font);
+      flex-shrink: 0;
+    }
+
+    .eyebrow {
+      margin: 0;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 6px 0 0;
+      font-family: var(--display-font);
+      font-size: clamp(24px, 3vw, 34px);
+      line-height: 1.1;
+    }
+
+    .status-pill {
+      margin-left: auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 10px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255,255,255,0.35);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--correct);
+    }
+
+    .panel {
+      display: grid;
+      grid-template-columns: minmax(0, 1.3fr) 280px;
+      gap: 28px;
+      padding-top: 26px;
+      align-items: start;
+    }
+
+    .game-shell {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--panel-radius);
+      box-shadow: var(--shadow);
+      padding: 20px 22px 18px;
+    }
+
+    .game-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      gap: 12px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .date {
+      margin: 0;
+      color: var(--muted);
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font-weight: 800;
+    }
+
+    .game-header h2 {
+      margin: 5px 0 0;
+      font-size: clamp(24px, 2.6vw, 30px);
+      font-family: var(--display-font);
+      line-height: 1.1;
+    }
+
+    .meta {
+      display: flex;
+      flex-direction: column;
+      align-items: end;
+      gap: 3px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .meta strong {
+      font-size: 14px;
+      color: var(--accent);
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 16px;
+      margin: 14px 0 16px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .legend-swatch {
+      width: 18px;
+      height: 18px;
+      display: grid;
+      place-items: center;
+      border-radius: 4px;
+      border: 1px solid var(--line);
+      color: var(--ink);
+      background: var(--surface-quiet);
+      font-weight: 900;
+      font-size: 10px;
+    }
+
+    .legend-swatch.correct {
+      border-color: var(--correct);
+      background: var(--correct);
+      color: #fff;
+    }
+
+    .legend-swatch.present {
+      border-color: rgba(146, 114, 29, 0.5);
+      background: var(--present);
+      color: #20241f;
+    }
+
+    .legend-swatch.absent {
+      background: var(--absent);
+      color: #2c3533;
+    }
+
+    .board-wrap {
+      display: flex;
+      justify-content: center;
+    }
+
+    .board {
+      width: min(100%, 420px);
+      display: grid;
+      gap: 6px;
+    }
+
+    .board-row {
+      display: grid;
+      grid-template-columns: repeat(var(--word-length), minmax(0, 1fr));
+      gap: 6px;
+    }
+
+    .tile {
+      aspect-ratio: 1;
+      display: grid;
+      place-items: center;
+      border-radius: var(--tile-radius);
+      border: 1px solid var(--line);
+      background: var(--surface);
+      color: var(--ink);
+      font-family: var(--display-font);
+      font-size: clamp(16px, 2.3vw, 28px);
+      font-weight: 800;
+      text-transform: uppercase;
+      position: relative;
+      user-select: none;
+    }
+
+    .tile.filled {
+      border-color: rgba(37, 51, 45, 0.7);
+    }
+
+    .tile.correct {
+      background: var(--correct);
+      border-color: var(--correct);
+      color: #fff;
+    }
+
+    .tile.present {
+      background: var(--present);
+      border-color: rgba(168, 138, 61, 0.7);
+      color: #1b1c1b;
+    }
+
+    .tile.absent {
+      background: var(--absent);
+      border-color: rgba(123, 123, 123, 0.3);
+      color: #2d2d2d;
+    }
+
+    .tile-state {
+      position: absolute;
+      top: 4px;
+      right: 6px;
+      font-size: 10px;
+      line-height: 1;
+      font-weight: 900;
+      color: rgba(255,255,255,0.9);
+    }
+
+    .tile.present .tile-state,
+    .tile.absent .tile-state {
+      color: rgba(17, 18, 17, 0.8);
+    }
+
+    .status {
+      min-height: 26px;
+      margin: 12px 0 10px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .status.error {
+      color: #9f3a2e;
+    }
+
+    .status.success {
+      color: var(--correct);
+    }
+
+    .keyboard {
+      margin: 0 auto;
+      max-width: 520px;
+      display: grid;
+      gap: 6px;
+    }
+
+    .key-row {
+      display: flex;
+      justify-content: center;
+      gap: 5px;
+    }
+
+    .key {
+      min-width: 0;
+      height: 42px;
+      flex: 1 1 0;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: var(--surface-quiet);
+      color: var(--ink);
+      font-weight: 900;
+      cursor: pointer;
+      transition: transform 0.12s ease;
+    }
+
+    .key:hover {
+      transform: translateY(-1px);
+    }
+
+    .key.wide {
+      flex: 1.7 1 0;
+      font-size: 11px;
+    }
+
+    .key.correct {
+      background: var(--correct);
+      border-color: var(--correct);
+      color: white;
+    }
+
+    .key.present {
+      background: var(--present);
+      border-color: rgba(156, 120, 28, 0.7);
+      color: #1a1d1b;
+    }
+
+    .key.absent {
+      background: var(--absent);
+      border-color: rgba(95, 98, 91, 0.3);
+      color: #2c3130;
+    }
+
+    .actions {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding-top: 10px;
+    }
+
+    .action-button {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: var(--surface-quiet);
+      color: var(--ink);
+      padding: 10px 16px;
+      font-weight: 800;
+      font-size: 12px;
+      cursor: pointer;
+      min-height: 42px;
+    }
+
+    .share {
+      border: none;
+      border-radius: 999px;
+      background: var(--accent);
+      color: #fff;
+      padding: 10px 18px;
+      font-weight: 800;
+      font-size: 12px;
+      cursor: pointer;
+      min-height: 42px;
+    }
+
+    .share[hidden] {
+      display: none;
+    }
+
+    .sidebar {
+      background: rgba(255,255,255,0.18);
+      border: 1px solid var(--line);
+      border-radius: var(--panel-radius);
+      padding: 16px 16px 10px;
+    }
+
+    .sidebar-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .sidebar-header h3 {
+      margin: 0;
+      font-size: 12px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .badge {
+      color: var(--accent);
+      font-family: var(--display-font);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .expert-list {
+      display: grid;
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .expert {
+      display: grid;
+      grid-template-columns: 34px 1fr;
+      gap: 10px;
+      align-items: start;
+    }
+
+    .expert-index {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--accent);
+      border-radius: 8px;
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 900;
+      font-family: var(--display-font);
+    }
+
+    .expert h4 {
+      margin: 0 0 4px;
+      font-size: 13px;
+    }
+
+    .expert p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .decision {
+      margin-top: 16px;
+      padding: 12px 12px 10px;
+      border-left: 3px solid var(--accent);
+      background: var(--surface-quiet);
+      border-radius: 0 8px 8px 0;
+    }
+
+    .decision strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .decision p {
+      margin: 0;
+      color: var(--ink);
+      font-weight: 700;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .foot {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      padding-top: 18px;
+      margin-top: 18px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    dialog {
+      width: min(480px, calc(100% - 28px));
+      padding: 0;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--surface);
+      color: var(--ink);
+      box-shadow: 0 24px 50px rgba(0,0,0,0.18);
+    }
+
+    dialog::backdrop {
+      background: rgba(15, 22, 20, 0.52);
+    }
+
+    .dialog-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .dialog-head h3 {
+      margin: 0;
+      font-family: var(--display-font);
+      font-size: 24px;
+    }
+
+    .close {
+      border: 1px solid var(--line);
+      background: transparent;
+      border-radius: 8px;
+      min-width: 34px;
+      min-height: 34px;
+      cursor: pointer;
+      font-size: 22px;
+      color: var(--ink);
+    }
+
+    .dialog-content {
+      padding: 18px;
+    }
+
+    .dialog-content p {
+      margin: 0 0 12px;
+      color: var(--muted);
+      line-height: 1.55;
+      font-size: 13px;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      margin: 14px 0;
+    }
+
+    .stat-box {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface-quiet);
+      text-align: center;
+      padding: 10px 8px 12px;
+    }
+
+    .stat-box strong {
+      display: block;
+      font-family: var(--display-font);
+      font-size: 28px;
+      line-height: 1;
+    }
+
+    .stat-box span {
+      display: block;
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .archive-list {
+      display: grid;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .archive-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--surface);
+      padding: 10px 12px;
+      cursor: pointer;
+      text-align: left;
+      color: var(--ink);
+    }
+
+    .archive-item:hover {
+      background: var(--surface-quiet);
+    }
+
+    .archive-date {
+      font-weight: 800;
+      display: block;
+    }
+
+    .archive-sub {
+      display: block;
+      margin-top: 3px;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .archive-action {
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .share-copy {
+      width: 100%;
+      min-height: 110px;
+      resize: vertical;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--surface-quiet);
+      font-family: "Courier New", monospace;
+      font-size: 12px;
+    }
+
+    .dialog-button {
+      margin-top: 12px;
+      width: 100%;
+      border: none;
+      background: var(--accent);
+      color: white;
+      border-radius: 10px;
+      min-height: 42px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    @media (max-width: 820px) {
+      .panel {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        order: -1;
+      }
+    }
+
+    @media (max-width: 460px) {
+      .app {
+        width: min(100% - 18px, 520px);
+      }
+
+      .masthead {
+        gap: 12px;
+      }
+
+      .status-pill {
+        display: none;
+      }
+
+      .game-shell {
+        padding: 14px 12px 16px;
+      }
+
+      .game-header {
+        gap: 8px;
+      }
+
+      .board {
+        gap: 4px;
+      }
+
+      .board-row {
+        gap: 4px;
+      }
+
+      .key {
+        height: 38px;
+        font-size: 12px;
+      }
+
+      .key.wide {
+        font-size: 10px;
+      }
+
+      .foot {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation: none !important;
+        transition: none !important;
+        scroll-behavior: auto !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="masthead">
+      <div class="brand-mark" aria-hidden="true">P</div>
+      <div>
+        <p class="eyebrow">Jogo da Silva / Lab</p>
+        <h1>Palavra do dia</h1>
+      </div>
+      <div class="status-pill" aria-label="Status do protótipo"><span class="dot" aria-hidden="true"></span>Versão funcional</div>
+    </header>
+
+    <main class="panel">
+      <section class="game-shell" aria-labelledby="game-title">
+        <header class="game-header">
+          <div>
+            <p class="date" id="game-date">Terça-feira · 20 out 2026</p>
+            <h2 id="game-title">Desafio diário</h2>
+          </div>
+          <div class="meta">
+            <strong id="word-length-label">6 letras</strong>
+            <span>10 tentativas</span>
+          </div>
+        </header>
+
+        <div class="legend" aria-label="Legenda de pistas">
+          <span class="legend-item"><span class="legend-swatch correct">✓</span>correta</span>
+          <span class="legend-item"><span class="legend-swatch present">↗</span>na palavra</span>
+          <span class="legend-item"><span class="legend-swatch absent">−</span>ausente</span>
+        </div>
+
+        <div class="board-wrap">
+          <div class="board" id="board" role="grid" aria-label="Tabuleiro do jogo"></div>
+        </div>
+
+        <p class="status" id="status" role="status" aria-live="polite">Digite 6 letras e pressione Enter.</p>
+
+        <div class="keyboard" aria-label="Teclado de letras">
+          <div class="key-row" id="row-1"></div>
+          <div class="key-row" id="row-2"></div>
+          <div class="key-row" id="row-3"></div>
+        </div>
+
+        <div class="actions">
+          <button class="action-button" id="stats-button" type="button">Estatísticas</button>
+          <button class="action-button" id="archive-button" type="button">Arquivo</button>
+          <button class="share" id="share-button" type="button" hidden>Compartilhar</button>
+        </div>
+      </section>
+
+      <aside class="sidebar" aria-label="Painel de especialistas">
+        <div class="sidebar-header">
+          <h3>Painel de especialistas</h3>
+          <span class="badge">01 / 03</span>
+        </div>
+
+        <div class="expert-list">
+          <article class="expert">
+            <div class="expert-index" aria-hidden="true">UX</div>
+            <div>
+              <h4>UX design</h4>
+              <p>Fluxo enxuto, instruções visíveis e feedback claro em cada tentativa.</p>
+            </div>
+          </article>
+
+          <article class="expert">
+            <div class="expert-index" aria-hidden="true">A11Y</div>
+            <div>
+              <h4>Acessibilidade web</h4>
+              <p>Teclado, foco visível, leitura por assistivas e símbolos além da cor.</p>
+            </div>
+          </article>
+
+          <article class="expert">
+            <div class="expert-index" aria-hidden="true">VIS</div>
+            <div>
+              <h4>Design visual</h4>
+              <p>Idioma editorial sereno, com hierarquia forte e legibilidade no centro.</p>
+            </div>
+          </article>
+        </div>
+
+        <div class="decision">
+          <strong>Decisão</strong>
+          <p>PT-BR · 5 a 10 letras · 10 tentativas · sem conta · compartilhamento sem spoiler.</p>
+        </div>
+      </aside>
+    </main>
+
+    <footer class="foot">
+      <span>Jogo funcional · alinhado ao PRD e ao protótipo</span>
+      <span>Sem ranking e sem analytics</span>
+    </footer>
+  </div>
+
+  <dialog id="modal" aria-labelledby="modal-title">
+    <div class="dialog-head">
+      <h3 id="modal-title">Estatísticas</h3>
+      <button class="close" type="button" aria-label="Fechar janela" id="close-modal">×</button>
+    </div>
+    <div class="dialog-content" id="modal-content"></div>
+  </dialog>
+
+  <script>
+    const DAILY_WORDS = [
+      'JANELA', 'CIDADE', 'CASTELO', 'MELANCIA', 'BICICLETA', 'PASTEL', 'SILVESTRE', 'FLORESTA', 'MONTANHA',
+      'CAMINHO', 'LIVRO', 'SOMBRIO', 'PRIMAVERA', 'BOLA', 'PESCADOR', 'VITRINE', 'PEDRA', 'CINEMA',
+      'TRILHA', 'ARCO', 'TABUA', 'BOLSA', 'RAPAZ', 'FUTURO', 'AMARELO', 'COLINA', 'SORRISO', 'JARDIM',
+      'MUSEU', 'TARDE', 'PORTA', 'NUVEM', 'VITORIA', 'MALHA', 'ORQUESTA', 'SONHO', 'NAVE', 'PAISAGEM'
+    ];
+
+    const VALID_WORDS = new Set([
+      'JANELA', 'CIDADE', 'CASTELO', 'MELANCIA', 'BICICLETA', 'PASTEL', 'SILVESTRE', 'FLORESTA', 'MONTANHA',
+      'CAMINHO', 'LIVRO', 'SOMBRIO', 'PRIMAVERA', 'BOLA', 'PESCADOR', 'VITRINE', 'PEDRA', 'CINEMA',
+      'TRILHA', 'ARCO', 'TABUA', 'BOLSA', 'RAPAZ', 'FUTURO', 'AMARELO', 'COLINA', 'SORRISO', 'JARDIM',
+      'MUSEU', 'TARDE', 'PORTA', 'NUVEM', 'VITORIA', 'MALHA', 'ORQUESTA', 'SONHO', 'NAVE', 'PAISAGEM',
+      'LANTERNA', 'CADERNO', 'MALHADO', 'ARROZ', 'PAPEL', 'FESTA', 'AMIGO', 'RIO', 'ROCHA', 'ILHA', 'HISTORIA',
+      'GARRAFA', 'GRANDE', 'DIA', 'NOITE', 'SEMENTE', 'LAGO', 'BOTOES', 'ALVO', 'ESCOLA', 'TRABALHO', 'MIRANTE', 'FOLHA'
+    ]);
+
+    const STORAGE_KEY = 'palavra-do-dia-state-v1';
+    const keyboardLayout = [
+      ['Q','W','E','R','T','Y','U','I','O','P'],
+      ['A','S','D','F','G','H','J','K','L'],
+      ['ENTER','Z','X','C','V','B','N','M','⌫']
+    ];
+
+    const board = document.getElementById('board');
+    const statusEl = document.getElementById('status');
+    const wordLengthLabel = document.getElementById('word-length-label');
+    const shareButton = document.getElementById('share-button');
+    const statsButton = document.getElementById('stats-button');
+    const archiveButton = document.getElementById('archive-button');
+    const modal = document.getElementById('modal');
+    const modalTitle = document.getElementById('modal-title');
+    const modalContent = document.getElementById('modal-content');
+    const closeModal = document.getElementById('close-modal');
+
+    const state = {
+      word: '',
+      guesses: [],
+      currentGuess: '',
+      hasWon: false,
+      isFinished: false,
+      puzzleDate: '',
+      puzzleKey: '',
+      archive: []
+    };
+
+    function stripAccents(value) {
+      return String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
+    }
+
+    function toLocalDateKey(date = new Date()) {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    function getPuzzleDate(date = new Date()) {
+      const fmt = new Intl.DateTimeFormat('pt-BR', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric'
+      });
+      return fmt.format(date).replace(/^./, c => c.toUpperCase());
+    }
+
+    function getDailyWord(date = new Date()) {
+      const key = toLocalDateKey(date);
+      let hash = 0;
+      for (let i = 0; i < key.length; i += 1) {
+        hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
+      }
+      return DAILY_WORDS[hash % DAILY_WORDS.length];
+    }
+
+    function getStats() {
+      try {
+        return JSON.parse(localStorage.getItem('palavra-do-dia-stats')) || {
+          played: 0,
+          wins: 0,
+          best: 0,
+          streak: 0,
+          completed: []
+        };
+      } catch {
+        return {
+          played: 0,
+          wins: 0,
+          best: 0,
+          streak: 0,
+          completed: []
+        };
+      }
+    }
+
+    function saveStats() {
+      const stats = getStats();
+      const key = state.puzzleKey || state.puzzleDate;
+      if (!stats.completed.includes(key)) {
+        stats.played += 1;
+        stats.completed.push(key);
+      }
+      if (state.hasWon) {
+        stats.wins += 1;
+        stats.streak += 1;
+        stats.best = Math.max(stats.best, stats.streak);
+      } else {
+        stats.streak = 0;
+      }
+      try {
+        localStorage.setItem('palavra-do-dia-stats', JSON.stringify(stats));
+      } catch (error) {
+        console.warn('localStorage indisponível', error);
+      }
+    }
+
+    function saveGameState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+          puzzleKey: state.puzzleKey,
+          puzzleDate: state.puzzleDate,
+          word: state.word,
+          guesses: state.guesses,
+          currentGuess: state.currentGuess,
+          hasWon: state.hasWon,
+          isFinished: state.isFinished
+        }));
+      } catch (error) {
+        console.warn('Não foi possível salvar o estado do jogo', error);
+      }
+    }
+
+    function restoreSavedState(todayKey) {
+      try {
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
+        if (!saved || saved.puzzleKey !== todayKey) return false;
+        state.word = saved.word || state.word;
+        state.guesses = Array.isArray(saved.guesses) ? saved.guesses : [];
+        state.currentGuess = saved.currentGuess || '';
+        state.hasWon = Boolean(saved.hasWon);
+        state.isFinished = Boolean(saved.isFinished);
+        return true;
+      } catch (error) {
+        console.warn('Não foi possível restaurar o estado do jogo', error);
+        return false;
+      }
+    }
+
+    function evaluateGuess(guess, answer) {
+      const normalizedGuess = stripAccents(guess).split('');
+      const normalizedAnswer = stripAccents(answer).split('');
+      const result = Array(normalizedGuess.length).fill('absent');
+      const remaining = {};
+
+      for (let i = 0; i < normalizedAnswer.length; i += 1) {
+        if (normalizedGuess[i] === normalizedAnswer[i]) {
+          result[i] = 'correct';
+        } else {
+          remaining[normalizedAnswer[i]] = (remaining[normalizedAnswer[i]] || 0) + 1;
+        }
+      }
+
+      for (let i = 0; i < normalizedGuess.length; i += 1) {
+        if (result[i] === 'correct') continue;
+        const letter = normalizedGuess[i];
+        if (remaining[letter] && remaining[letter] > 0) {
+          result[i] = 'present';
+          remaining[letter] -= 1;
+        }
+      }
+
+      return result;
+    }
+
+    function letterState(letter, index, answer) {
+      const guess = letter;
+      const result = evaluateGuess(guess, answer);
+      return result[0] || 'absent';
+    }
+
+    function renderBoard() {
+      const length = state.word.length;
+      board.style.setProperty('--word-length', String(length));
+      board.innerHTML = '';
+
+      for (let rowIndex = 0; rowIndex < 10; rowIndex += 1) {
+        const row = document.createElement('div');
+        row.className = 'board-row';
+        row.setAttribute('role', 'row');
+
+        for (let colIndex = 0; colIndex < length; colIndex += 1) {
+          const tile = document.createElement('div');
+          tile.className = 'tile';
+          tile.setAttribute('role', 'gridcell');
+
+          const submitted = state.guesses[rowIndex];
+          let value = '';
+          if (submitted) {
+            value = submitted[colIndex] || '';
+          } else if (rowIndex === state.guesses.length && !state.isFinished) {
+            value = state.currentGuess[colIndex] || '';
+          }
+
+          if (value) {
+            tile.textContent = value;
+            tile.classList.add('filled');
+          }
+
+          if (submitted && value) {
+            const currentState = evaluateGuess(submitted, state.word)[colIndex];
+            tile.classList.add(currentState);
+            const hint = document.createElement('span');
+            hint.className = 'tile-state';
+            hint.textContent = currentState === 'correct' ? '✓' : currentState === 'present' ? '↗' : '−';
+            tile.appendChild(hint);
+            tile.setAttribute('aria-label', `${value}, ${currentState}`);
+          } else if (value) {
+            tile.setAttribute('aria-label', value);
+          } else {
+            tile.setAttribute('aria-label', `Posição ${colIndex + 1}, vazia`);
+          }
+
+          row.appendChild(tile);
+        }
+
+        board.appendChild(row);
+      }
+
+      renderKeyboard();
+    }
+
+    function renderKeyboard() {
+      const map = new Map();
+      state.guesses.forEach((guess) => {
+        const result = evaluateGuess(guess, state.word);
+        guess.split('').forEach((letter, index) => {
+          const stateName = result[index];
+          const previous = map.get(letter);
+          if (!previous || stateName === 'correct' || (stateName === 'present' && previous === 'absent')) {
+            map.set(letter, stateName);
+          }
+        });
+      });
+
+      keyboardLayout.forEach((row, rowIndex) => {
+        const rowEl = document.getElementById(`row-${rowIndex + 1}`);
+        rowEl.innerHTML = '';
+
+        row.forEach((key) => {
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'key';
+          button.textContent = key === 'ENTER' ? 'Enviar' : key === '⌫' ? 'Apagar' : key;
+          if (key === 'ENTER' || key === '⌫') button.classList.add('wide');
+          if (map.has(key)) button.classList.add(map.get(key));
+          if (key === 'ENTER' || key === '⌫') {
+            button.setAttribute('aria-label', key === 'ENTER' ? 'Enviar tentativa' : 'Apagar última letra');
+          }
+          button.addEventListener('click', () => handleKey(key));
+          rowEl.appendChild(button);
+        });
+      });
+    }
+
+    function updateStatus(message, kind = '') {
+      statusEl.textContent = message;
+      statusEl.className = 'status';
+      if (kind) statusEl.classList.add(kind);
+    }
+
+    function handleKey(key) {
+      if (state.isFinished) return;
+
+      if (key === 'ENTER') {
+        submitGuess();
+        return;
+      }
+
+      if (key === '⌫' || key === 'BACKSPACE') {
+        state.currentGuess = state.currentGuess.slice(0, -1);
+        saveGameState();
+        renderBoard();
+        updateStatus(`Digite ${state.word.length} letras e pressione Enter.`);
+        return;
+      }
+
+      const sanitizedKey = stripAccents(key);
+      if (!/^[A-Z]$/.test(sanitizedKey)) return;
+
+      if (state.currentGuess.length < state.word.length) {
+        state.currentGuess += sanitizedKey;
+        saveGameState();
+        renderBoard();
+        updateStatus(`Você digitou ${state.currentGuess.length} de ${state.word.length} letras.`);
+      }
+    }
+
+    function submitGuess() {
+      if (state.currentGuess.length !== state.word.length) {
+        updateStatus(`Faltam ${state.word.length - state.currentGuess.length} letras.`, 'error');
+        return;
+      }
+
+      const guess = stripAccents(state.currentGuess);
+      if (!VALID_WORDS.has(guess)) {
+        updateStatus('Esta palavra não está na lista do jogo. Tente outra.', 'error');
+        return;
+      }
+
+      state.guesses.push(guess);
+      state.currentGuess = '';
+      const won = guess === stripAccents(state.word);
+      state.hasWon = won;
+      state.isFinished = won || state.guesses.length >= 10;
+      saveGameState();
+      renderBoard();
+
+      if (won) {
+        updateStatus(`Você acertou em ${state.guesses.length} tentativa(s)!`, 'success');
+        shareButton.hidden = false;
+        saveStats();
+        return;
+      }
+
+      if (state.isFinished) {
+        updateStatus(`Fim de jogo. A palavra era ${state.word}.`, 'error');
+        shareButton.hidden = false;
+        saveStats();
+        return;
+      }
+
+      updateStatus(`Tentativa ${state.guesses.length} de 10 registrada.`);
+    }
+
+    function shareText() {
+      const emoji = { correct: '🟩', present: '🟨', absent: '⬜' };
+      const lines = state.guesses.map((guess) => {
+        const result = evaluateGuess(guess, state.word);
+        return result.map((status) => emoji[status] || '⬜').join('');
+      });
+      return `Palavra do dia\n${state.puzzleDate}\n${lines.join('\n')}\n\n#JogoDaSilva`;
+    }
+
+    async function shareResult() {
+      const text = shareText();
+      if (navigator.share) {
+        try {
+          await navigator.share({ title: 'Palavra do dia', text });
+          return;
+        } catch (error) {
+          if (error.name === 'AbortError') return;
+        }
+      }
+
+      modalTitle.textContent = 'Compartilhar resultado';
+      modalContent.innerHTML = `
+        <p>Este resultado não revela a palavra correta.</p>
+        <textarea readonly class="share-copy" aria-label="Resultado para compartilhamento">${text}</textarea>
+        <button class="dialog-button" type="button" id="copy-share">Copiar resultado</button>
+      `;
+      modal.showModal();
+      const copyButton = document.getElementById('copy-share');
+      copyButton.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(text);
+          updateStatus('Resultado copiado para a área de transferência.', 'success');
+        } catch {
+          const textarea = modalContent.querySelector('textarea');
+          textarea.focus();
+          textarea.select();
+          updateStatus('Selecione o texto e copie manualmente.', 'success');
+        }
+        modal.close();
+      });
+    }
+
+    function openStats() {
+      const stats = getStats();
+      modalTitle.textContent = 'Estatísticas';
+      modalContent.innerHTML = `
+        <p>Dados salvos localmente neste navegador.</p>
+        <div class="stats-grid">
+          <div class="stat-box"><strong>${stats.played}</strong><span>jogos</span></div>
+          <div class="stat-box"><strong>${stats.played ? Math.round((stats.wins / stats.played) * 100) : 0}%</strong><span>acertos</span></div>
+          <div class="stat-box"><strong>${stats.best}</strong><span>melhor</span></div>
+        </div>
+        <p>Sequência atual: <strong>${stats.streak}</strong> dia(s).</p>
+      `;
+      modal.showModal();
+    }
+
+    function openArchive() {
+      const archive = [
+        { date: '12 out 2026', label: '12 out', word: 'CIDADE' },
+        { date: '11 out 2026', label: '11 out', word: 'FLORESTA' },
+        { date: '10 out 2026', label: '10 out', word: 'MUSEU' },
+        { date: '09 out 2026', label: '09 out', word: 'PEDRA' }
+      ];
+
+      modalTitle.textContent = 'Arquivo de desafios';
+      modalContent.innerHTML = `
+        <p>Retome desafios anteriores e tente novamente.</p>
+        <div class="archive-list"></div>
+      `;
+
+      const list = modalContent.querySelector('.archive-list');
+      archive.forEach((item) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'archive-item';
+        button.innerHTML = `
+          <span>
+            <span class="archive-date">${item.label}</span>
+            <span class="archive-sub">${item.word.length} letras · 10 tentativas</span>
+          </span>
+          <span class="archive-action">Jogar</span>
+        `;
+        button.addEventListener('click', () => {
+          state.word = item.word;
+          state.guesses = [];
+          state.currentGuess = '';
+          state.hasWon = false;
+          state.isFinished = false;
+          state.puzzleKey = item.date;
+          state.puzzleDate = item.date;
+          wordLengthLabel.textContent = `${state.word.length} letras`;
+          updateStatus(`Digite ${state.word.length} letras e pressione Enter.`);
+          renderBoard();
+          saveGameState();
+          modal.close();
+        });
+        list.appendChild(button);
+      });
+      modal.showModal();
+    }
+
+    function initKeyboardHandlers() {
+      document.addEventListener('keydown', (event) => {
+        if (modal.open || event.ctrlKey || event.metaKey || event.altKey) return;
+
+        if (event.key === 'Enter') {
+          event.preventDefault();
+          handleKey('ENTER');
+          return;
+        }
+
+        if (event.key === 'Backspace') {
+          event.preventDefault();
+          handleKey('⌫');
+          return;
+        }
+
+        if (/^[a-zA-ZçÇ]$/.test(event.key)) {
+          handleKey(stripAccents(event.key));
+        }
+      });
+
+      closeModal.addEventListener('click', () => modal.close());
+      modal.addEventListener('click', (event) => {
+        if (event.target === modal) modal.close();
+      });
+
+      shareButton.addEventListener('click', shareResult);
+      statsButton.addEventListener('click', openStats);
+      archiveButton.addEventListener('click', openArchive);
+    }
+
+    function initGame() {
+      const today = new Date();
+      const todayKey = toLocalDateKey(today);
+      state.puzzleKey = todayKey;
+      state.puzzleDate = getPuzzleDate(today);
+      state.word = getDailyWord(today);
+      state.guesses = [];
+      state.currentGuess = '';
+      state.hasWon = false;
+      state.isFinished = false;
+
+      const restored = restoreSavedState(todayKey);
+      if (!restored) {
+        state.guesses = [];
+        state.currentGuess = '';
+        state.hasWon = false;
+        state.isFinished = false;
+      }
+
+      document.getElementById('game-date').textContent = state.puzzleDate;
+      wordLengthLabel.textContent = `${state.word.length} letras`;
+      updateStatus(`Digite ${state.word.length} letras e pressione Enter.`);
+      renderBoard();
+      initKeyboardHandlers();
+      saveGameState();
+    }
+
+    initGame();
+  </script>
+</body>
+</html>

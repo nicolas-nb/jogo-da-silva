@@ -1,0 +1,1116 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f3efe4">
+  <title>Protótipos | Palavra do dia</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --page: #f3efe4;
+      --surface: #fffdf7;
+      --surface-quiet: #ebe7dc;
+      --ink: #25332d;
+      --muted: #59665f;
+      --line: #c8cec4;
+      --accent: #b94630;
+      --correct: #316c48;
+      --present: #d7ad42;
+      --absent: #dfe3dc;
+      --focus: #1265a8;
+      --shadow: 0 12px 30px rgb(37 51 45 / 7%);
+      --display-font: Georgia, "Times New Roman", serif;
+      --body-font: "Trebuchet MS", "Segoe UI", sans-serif;
+      --tile-radius: 3px;
+      --control-radius: 4px;
+      --panel-radius: 4px;
+      --line-width: 1px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      min-width: 320px;
+      min-height: 100vh;
+      margin: 0;
+      color: var(--ink);
+      background-color: var(--page);
+      background-image: repeating-linear-gradient(0deg, transparent 0 31px, rgb(57 73 62 / 3%) 31px 32px);
+      font-family: var(--body-font);
+      transition: background-color 180ms ease, color 180ms ease;
+    }
+
+    body[data-theme="feira"] {
+      --page: #fff0d7;
+      --surface: #fffaf0;
+      --surface-quiet: #f9dfb4;
+      --ink: #292c26;
+      --muted: #5e6258;
+      --line: #393a32;
+      --accent: #c93d35;
+      --correct: #226e57;
+      --present: #edc238;
+      --absent: #e7e3d8;
+      --focus: #095e9f;
+      --shadow: 4px 5px 0 rgb(41 44 38 / 15%);
+      --display-font: "Trebuchet MS", "Segoe UI", sans-serif;
+      --body-font: "Trebuchet MS", "Segoe UI", sans-serif;
+      --tile-radius: 9px;
+      --control-radius: 999px;
+      --panel-radius: 8px;
+      --line-width: 2px;
+      background-image: radial-gradient(rgb(201 61 53 / 7%) 1px, transparent 1px);
+      background-size: 17px 17px;
+    }
+
+    body[data-theme="oficina"] {
+      --page: #e9f1f0;
+      --surface: #fbfdfb;
+      --surface-quiet: #dce8e6;
+      --ink: #172d30;
+      --muted: #405b5e;
+      --line: #789093;
+      --accent: #135e69;
+      --correct: #176540;
+      --present: #e1bd2e;
+      --absent: #d8e0df;
+      --focus: #a84456;
+      --shadow: 0 10px 0 rgb(19 94 105 / 8%);
+      --display-font: "Courier New", monospace;
+      --body-font: "Segoe UI", "Trebuchet MS", sans-serif;
+      --tile-radius: 2px;
+      --control-radius: 2px;
+      --panel-radius: 2px;
+      --line-width: 2px;
+      background-image: linear-gradient(90deg, transparent 49px, rgb(19 94 105 / 5%) 50px), linear-gradient(transparent 49px, rgb(19 94 105 / 5%) 50px);
+      background-size: 50px 50px;
+    }
+
+    button { font: inherit; }
+
+    button:focus-visible,
+    a:focus-visible,
+    textarea:focus-visible {
+      outline: 3px solid var(--focus);
+      outline-offset: 3px;
+    }
+
+    .app-shell {
+      width: min(1180px, calc(100% - 40px));
+      margin: 0 auto;
+      padding: 28px 0 36px;
+    }
+
+    .masthead {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding-bottom: 20px;
+      border-bottom: var(--line-width) solid var(--line);
+    }
+
+    .brand-mark {
+      display: grid;
+      width: 44px;
+      height: 44px;
+      flex: 0 0 44px;
+      place-items: center;
+      color: var(--surface);
+      background: var(--accent);
+      font-family: var(--display-font);
+      font-weight: 900;
+      font-size: 20px;
+    }
+
+    .masthead-copy { min-width: 0; }
+
+    .eyebrow,
+    .section-kicker {
+      margin: 0;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+      line-height: 1.4;
+    }
+
+    .eyebrow { letter-spacing: 1.1px; }
+
+    h1 {
+      margin: 3px 0 0;
+      font-family: var(--display-font);
+      font-size: 25px;
+      line-height: 1.15;
+    }
+
+    .masthead-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-left: auto;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--correct);
+    }
+
+    .prototype-nav {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      padding: 18px 0 22px;
+    }
+
+    .theme-button {
+      display: flex;
+      min-height: 58px;
+      align-items: center;
+      gap: 12px;
+      padding: 9px 14px;
+      border: var(--line-width) solid var(--line);
+      border-radius: var(--control-radius);
+      color: var(--ink);
+      background: var(--surface);
+      text-align: left;
+      cursor: pointer;
+      transition: transform 150ms ease, background-color 150ms ease, box-shadow 150ms ease;
+    }
+
+    .theme-button:hover { transform: translateY(-2px); }
+
+    .theme-button[aria-selected="true"] {
+      border-color: var(--accent);
+      box-shadow: inset 4px 0 var(--accent);
+      background: var(--surface-quiet);
+    }
+
+    .theme-index {
+      color: var(--accent);
+      font-family: var(--display-font);
+      font-size: 17px;
+      font-weight: 900;
+    }
+
+    .theme-name {
+      display: block;
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .theme-detail {
+      display: block;
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 290px;
+      align-items: start;
+      gap: 26px;
+    }
+
+    .game-column { min-width: 0; }
+
+    .game-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 0 0 10px;
+    }
+
+    .game-toolbar-label {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .8px;
+      text-transform: uppercase;
+    }
+
+    .toolbar-actions { display: flex; gap: 7px; }
+
+    .text-button {
+      min-height: 36px;
+      padding: 6px 10px;
+      border: var(--line-width) solid transparent;
+      border-radius: var(--control-radius);
+      color: var(--ink);
+      background: transparent;
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .text-button:hover { border-color: var(--line); background: var(--surface); }
+
+    .game-surface {
+      padding: 21px 24px 23px;
+      border: var(--line-width) solid var(--line);
+      border-radius: var(--panel-radius);
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+
+    .game-heading {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 14px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .game-heading h2 {
+      margin: 4px 0 0;
+      font-family: var(--display-font);
+      font-size: 25px;
+      line-height: 1.15;
+    }
+
+    .date-label {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .puzzle-meta {
+      display: flex;
+      flex: 0 0 auto;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 4px;
+      padding-top: 3px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+      text-align: right;
+    }
+
+    .puzzle-meta strong {
+      color: var(--accent);
+      font-size: 13px;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 15px;
+      margin: 14px 0 13px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .legend-item { display: inline-flex; align-items: center; gap: 6px; }
+
+    .legend-mark {
+      display: grid;
+      width: 19px;
+      height: 19px;
+      place-items: center;
+      border: 1px solid var(--line);
+      border-radius: 3px;
+      color: var(--ink);
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .legend-mark.correct { border-color: var(--correct); color: white; background: var(--correct); }
+    .legend-mark.present { border-color: #92721d; background: var(--present); }
+    .legend-mark.absent { background: var(--absent); }
+
+    .board-wrap { display: flex; justify-content: center; }
+
+    .board {
+      display: grid;
+      width: min(100%, 410px);
+      gap: 5px;
+    }
+
+    .board-row {
+      display: grid;
+      grid-template-columns: repeat(var(--word-length), minmax(0, 1fr));
+      gap: 5px;
+    }
+
+    .tile {
+      position: relative;
+      display: grid;
+      aspect-ratio: 1;
+      min-width: 0;
+      place-items: center;
+      border: var(--line-width) solid var(--line);
+      border-radius: var(--tile-radius);
+      color: var(--ink);
+      background: var(--surface);
+      font-family: var(--display-font);
+      font-size: clamp(16px, 3.5vw, 22px);
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    .tile.filled { border-color: var(--muted); }
+
+    .tile.correct,
+    .tile.present,
+    .tile.absent {
+      border-color: transparent;
+      color: #fff;
+    }
+
+    .tile.correct { background: var(--correct); }
+    .tile.present { color: #20241f; background: var(--present); }
+    .tile.absent { color: #28332f; background: var(--absent); }
+
+    .tile-symbol {
+      position: absolute;
+      top: 1px;
+      right: 3px;
+      font-family: var(--body-font);
+      font-size: 9px;
+      line-height: 1;
+    }
+
+    .message {
+      min-height: 22px;
+      margin: 10px 0 4px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .message[data-kind="error"] { color: #a32920; }
+    .message[data-kind="success"] { color: var(--correct); }
+
+    .keyboard {
+      display: grid;
+      gap: 6px;
+      margin: 0 auto;
+      max-width: 500px;
+    }
+
+    .keyboard-row {
+      display: flex;
+      justify-content: center;
+      gap: 5px;
+    }
+
+    .key {
+      display: grid;
+      min-width: 0;
+      min-height: 42px;
+      flex: 1 1 0;
+      place-items: center;
+      padding: 0 5px;
+      border: var(--line-width) solid var(--line);
+      border-radius: var(--panel-radius);
+      color: var(--ink);
+      background: var(--surface-quiet);
+      font-size: 13px;
+      font-weight: 900;
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+
+    .key.wide { flex: 1.65 1 0; font-size: 10px; }
+    .key:hover { filter: brightness(.96); }
+    .key.correct { border-color: var(--correct); color: white; background: var(--correct); }
+    .key.present { border-color: #92721d; color: #20241f; background: var(--present); }
+    .key.absent { color: #37413d; background: var(--absent); }
+    .key:disabled { cursor: default; opacity: .7; }
+
+    .share-row {
+      display: flex;
+      min-height: 42px;
+      align-items: center;
+      justify-content: center;
+      padding-top: 10px;
+    }
+
+    .share-button {
+      min-height: 40px;
+      padding: 8px 17px;
+      border: 0;
+      border-radius: var(--control-radius);
+      color: #fff;
+      background: var(--accent);
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .share-button[hidden] { display: none; }
+
+    .specialists {
+      padding: 4px 0 0;
+    }
+
+    .specialists-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding-bottom: 12px;
+      border-bottom: var(--line-width) solid var(--line);
+    }
+
+    .specialists-heading h2 {
+      margin: 0;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: .8px;
+      text-transform: uppercase;
+    }
+
+    .round-label {
+      color: var(--muted);
+      font-family: var(--display-font);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .specialist-list { display: grid; }
+
+    .specialist {
+      display: grid;
+      grid-template-columns: 34px minmax(0, 1fr);
+      gap: 10px;
+      padding: 15px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .specialist-index {
+      display: grid;
+      width: 32px;
+      height: 32px;
+      place-items: center;
+      border: var(--line-width) solid var(--accent);
+      border-radius: var(--tile-radius);
+      color: var(--accent);
+      font-family: var(--display-font);
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    .specialist h3 {
+      margin: 0 0 4px;
+      font-size: 13px;
+    }
+
+    .specialist p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .decision-note {
+      margin-top: 17px;
+      padding: 12px 13px;
+      border-left: 3px solid var(--accent);
+      background: var(--surface-quiet);
+    }
+
+    .decision-note strong {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 11px;
+      letter-spacing: .7px;
+      text-transform: uppercase;
+    }
+
+    .decision-note p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .page-foot {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      margin-top: 20px;
+      padding-top: 12px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    dialog {
+      width: min(480px, calc(100% - 32px));
+      max-height: min(78vh, 680px);
+      padding: 0;
+      overflow: auto;
+      border: var(--line-width) solid var(--line);
+      border-radius: var(--panel-radius);
+      color: var(--ink);
+      background: var(--surface);
+      box-shadow: 0 18px 60px rgb(0 0 0 / 24%);
+    }
+
+    dialog::backdrop { background: rgb(18 31 27 / 55%); }
+
+    .dialog-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 17px 19px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .dialog-head h2 {
+      margin: 0;
+      font-family: var(--display-font);
+      font-size: 21px;
+    }
+
+    .dialog-close {
+      min-width: 36px;
+      min-height: 36px;
+      border: var(--line-width) solid var(--line);
+      border-radius: var(--control-radius);
+      color: var(--ink);
+      background: var(--surface);
+      font-size: 20px;
+      cursor: pointer;
+    }
+
+    .dialog-content { padding: 18px 19px 20px; }
+    .dialog-content p { color: var(--muted); font-size: 13px; line-height: 1.55; }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin: 16px 0;
+    }
+
+    .stat {
+      padding: 12px 6px;
+      border: 1px solid var(--line);
+      text-align: center;
+    }
+
+    .stat strong { display: block; font-family: var(--display-font); font-size: 24px; }
+    .stat span { display: block; margin-top: 3px; color: var(--muted); font-size: 10px; }
+
+    .archive-list { display: grid; gap: 7px; }
+
+    .archive-item {
+      display: flex;
+      min-height: 54px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      color: var(--ink);
+      background: var(--surface);
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .archive-item:hover { background: var(--surface-quiet); }
+    .archive-date { font-weight: 800; }
+    .archive-detail { color: var(--muted); font-size: 11px; }
+    .archive-action { color: var(--accent); font-size: 11px; font-weight: 900; }
+
+    .share-copy {
+      width: 100%;
+      min-height: 105px;
+      resize: vertical;
+      padding: 11px;
+      border: 1px solid var(--line);
+      border-radius: var(--control-radius);
+      color: var(--ink);
+      background: var(--surface-quiet);
+      font: 13px/1.55 "Courier New", monospace;
+    }
+
+    .dialog-primary {
+      min-height: 40px;
+      margin-top: 10px;
+      padding: 8px 14px;
+      border: 0;
+      border-radius: var(--control-radius);
+      color: #fff;
+      background: var(--accent);
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    @media (max-width: 860px) {
+      .workspace { grid-template-columns: minmax(0, 1fr) 250px; gap: 18px; }
+      .game-surface { padding-inline: 17px; }
+    }
+
+    @media (max-width: 700px) {
+      .app-shell { width: min(100% - 24px, 560px); padding-top: 16px; }
+      .masthead { gap: 11px; padding-bottom: 15px; }
+      .brand-mark { width: 38px; height: 38px; flex-basis: 38px; }
+      h1 { font-size: 20px; }
+      .masthead-meta { font-size: 0; }
+      .status-dot { width: 10px; height: 10px; }
+      .prototype-nav { gap: 6px; padding: 13px 0 17px; }
+      .theme-button { min-height: 56px; gap: 7px; padding: 7px 8px; }
+      .theme-index { font-size: 14px; }
+      .theme-name { font-size: 12px; }
+      .theme-detail { font-size: 9px; }
+      .workspace { grid-template-columns: 1fr; gap: 24px; }
+      .board-row.future-row { display: none; }
+      .specialists { padding-top: 4px; }
+      .specialist-list { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 11px; }
+      .specialist { grid-template-columns: 28px minmax(0, 1fr); gap: 7px; padding: 12px 0; }
+      .specialist-index { width: 26px; height: 26px; font-size: 11px; }
+      .specialist h3 { font-size: 11px; }
+      .specialist p { font-size: 10px; }
+      .decision-note { margin-top: 11px; }
+    }
+
+    @media (max-width: 430px) {
+      .app-shell { width: calc(100% - 20px); }
+      .masthead { align-items: flex-start; }
+      h1 { max-width: 235px; font-size: 18px; }
+      .game-surface { padding: 15px 11px 16px; }
+      .game-heading h2 { font-size: 22px; }
+      .game-toolbar { align-items: flex-start; }
+      .game-toolbar-label { max-width: 110px; line-height: 1.4; }
+      .toolbar-actions { gap: 2px; }
+      .text-button { padding: 5px 6px; font-size: 11px; }
+      .board { gap: 4px; }
+      .board-row { gap: 4px; }
+      .tile { font-size: clamp(15px, 6vw, 20px); }
+      .keyboard { gap: 5px; }
+      .keyboard-row { gap: 3px; }
+      .key { min-height: 39px; padding: 0 2px; font-size: 11px; }
+      .key.wide { font-size: 9px; }
+      .specialist-list { grid-template-columns: 1fr; }
+      .specialist { grid-template-columns: 32px minmax(0, 1fr); padding: 10px 0; }
+      .specialist-index { width: 30px; height: 30px; }
+      .specialist h3 { font-size: 12px; }
+      .specialist p { font-size: 11px; }
+      .page-foot { flex-direction: column; gap: 5px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        scroll-behavior: auto !important;
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
+      }
+    }
+  </style>
+</head>
+<body data-theme="caderno">
+  <div class="app-shell">
+    <header class="masthead">
+      <div class="brand-mark" aria-hidden="true">JP</div>
+      <div class="masthead-copy">
+        <p class="eyebrow">JOGO DA SILVA / LAB DE INTERFACE</p>
+        <h1>Três direções para a palavra do dia</h1>
+      </div>
+      <div class="masthead-meta"><span class="status-dot" aria-hidden="true"></span>Mockup interativo</div>
+    </header>
+
+    <nav class="prototype-nav" role="tablist" aria-label="Direções visuais do protótipo">
+      <button class="theme-button" id="tab-caderno" type="button" role="tab" aria-selected="true" aria-controls="prototype-view" data-theme-choice="caderno">
+        <span class="theme-index">01</span><span><span class="theme-name">Caderno</span><span class="theme-detail">editorial e sereno</span></span>
+      </button>
+      <button class="theme-button" id="tab-feira" type="button" role="tab" aria-selected="false" aria-controls="prototype-view" data-theme-choice="feira" tabindex="-1">
+        <span class="theme-index">02</span><span><span class="theme-name">Feira</span><span class="theme-detail">vivo e descontraído</span></span>
+      </button>
+      <button class="theme-button" id="tab-oficina" type="button" role="tab" aria-selected="false" aria-controls="prototype-view" data-theme-choice="oficina" tabindex="-1">
+        <span class="theme-index">03</span><span><span class="theme-name">Oficina</span><span class="theme-detail">preciso e contrastado</span></span>
+      </button>
+    </nav>
+
+    <main class="workspace" id="prototype-view" role="tabpanel" aria-labelledby="tab-caderno" tabindex="0">
+      <section class="game-column" aria-labelledby="game-title">
+        <div class="game-toolbar">
+          <span class="game-toolbar-label">Desafio demonstrativo · sem conta</span>
+          <div class="toolbar-actions">
+            <button class="text-button" type="button" data-panel="stats">Estatísticas</button>
+            <button class="text-button" type="button" data-panel="archive">Arquivo</button>
+          </div>
+        </div>
+
+        <section class="game-surface" aria-label="Jogo de adivinhação de palavras">
+          <header class="game-heading">
+            <div>
+              <p class="date-label" id="puzzle-date">TERÇA-FEIRA · 13 OUT 2026</p>
+              <h2 id="game-title">Palavra de hoje</h2>
+            </div>
+            <div class="puzzle-meta"><strong id="word-size">6 letras</strong><span>10 tentativas</span></div>
+          </header>
+
+          <div class="legend" aria-label="Legenda das pistas">
+            <span class="legend-item"><span class="legend-mark correct" aria-hidden="true">✓</span>posição certa</span>
+            <span class="legend-item"><span class="legend-mark present" aria-hidden="true">↗</span>está na palavra</span>
+            <span class="legend-item"><span class="legend-mark absent" aria-hidden="true">−</span>não aparece</span>
+          </div>
+
+          <div class="board-wrap">
+            <div class="board" id="board" role="grid" aria-label="Tabuleiro de 10 tentativas"></div>
+          </div>
+          <p class="message" id="game-message" role="status" aria-live="polite">Digite 6 letras e pressione Enter para enviar.</p>
+
+          <div class="keyboard" aria-label="Teclado de letras na tela">
+            <div class="keyboard-row" data-row="Q W E R T Y U I O P"></div>
+            <div class="keyboard-row" data-row="A S D F G H J K L"></div>
+            <div class="keyboard-row" data-row="ENTER Z X C V B N M ⌫"></div>
+          </div>
+          <div class="share-row"><button class="share-button" id="share-button" type="button" hidden>Compartilhar resultado sem spoiler</button></div>
+        </section>
+      </section>
+
+      <aside class="specialists" aria-labelledby="specialists-title">
+        <div class="specialists-heading">
+          <h2 id="specialists-title">Painel de especialistas</h2>
+          <span class="round-label">01 / 03</span>
+        </div>
+        <div class="specialist-list">
+          <article class="specialist">
+            <span class="specialist-index" aria-hidden="true">UX</span>
+            <div><h3>UX design</h3><p>Uma grade, um teclado e um próximo passo sempre evidente.</p></div>
+          </article>
+          <article class="specialist">
+            <span class="specialist-index" aria-hidden="true">A11Y</span>
+            <div><h3>Acessibilidade web</h3><p>Teclado, foco visível e pistas que não dependem só de cor.</p></div>
+          </article>
+          <article class="specialist">
+            <span class="specialist-index" aria-hidden="true">VIS</span>
+            <div><h3>Design visual</h3><p>Três linguagens visuais; uma hierarquia e mecânica comuns.</p></div>
+          </article>
+        </div>
+        <div class="decision-note">
+          <strong>Decisões integradas</strong>
+          <p>PT-BR · 5 a 10 letras · 10 tentativas · acentos tolerados · sem conta.</p>
+        </div>
+      </aside>
+    </main>
+
+    <footer class="page-foot">
+      <span>Protótipo de interface · resultado salvo somente neste navegador</span>
+      <span>Sem ranking ou coleta de analytics</span>
+    </footer>
+  </div>
+
+  <dialog id="info-dialog" aria-labelledby="dialog-title">
+    <div class="dialog-head">
+      <h2 id="dialog-title">Estatísticas</h2>
+      <button class="dialog-close" type="button" aria-label="Fechar janela">×</button>
+    </div>
+    <div class="dialog-content" id="dialog-content"></div>
+  </dialog>
+
+  <script>
+    const puzzles = [
+      { id: "2026-10-13", date: "TERÇA-FEIRA · 13 OUT 2026", word: "JANELA", label: "Hoje" },
+      { id: "2026-10-12", date: "SEGUNDA-FEIRA · 12 OUT 2026", word: "CEDRO", label: "12 out" },
+      { id: "2026-10-11", date: "DOMINGO · 11 OUT 2026", word: "ESCOLA", label: "11 out" },
+      { id: "2026-10-10", date: "SÁBADO · 10 OUT 2026", word: "PLANETA", label: "10 out" }
+    ];
+    const keyboardRows = [...document.querySelectorAll(".keyboard-row")];
+    const board = document.querySelector("#board");
+    const message = document.querySelector("#game-message");
+    const shareButton = document.querySelector("#share-button");
+    const dialog = document.querySelector("#info-dialog");
+    const dialogTitle = document.querySelector("#dialog-title");
+    const dialogContent = document.querySelector("#dialog-content");
+    const themeTabs = [...document.querySelectorAll("[data-theme-choice]")];
+    const tileSymbols = { correct: "✓", present: "↗", absent: "−" };
+    const shareSymbols = { correct: "🟩", present: "🟨", absent: "⬛" };
+    let activePuzzle = puzzles[0];
+    let guesses = [];
+    let currentGuess = "";
+    let isFinished = false;
+    let hasWon = false;
+
+    function normalizeWord(value) {
+      return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLocaleUpperCase("pt-BR");
+    }
+
+    function letterState(letter, index, answer) {
+      if (letter === answer[index]) return "correct";
+      if (answer.includes(letter)) return "present";
+      return "absent";
+    }
+
+    function renderBoard() {
+      const length = activePuzzle.word.length;
+      const answer = normalizeWord(activePuzzle.word);
+      board.style.setProperty("--word-length", length);
+      board.setAttribute("aria-label", `Tabuleiro de 10 tentativas para palavra de ${length} letras`);
+      board.replaceChildren();
+
+      for (let rowIndex = 0; rowIndex < 10; rowIndex += 1) {
+        const row = document.createElement("div");
+        row.className = "board-row";
+        if (rowIndex > guesses.length) row.classList.add("future-row");
+        row.setAttribute("role", "row");
+        const submitted = guesses[rowIndex];
+        const current = rowIndex === guesses.length && !isFinished ? currentGuess : "";
+
+        for (let column = 0; column < length; column += 1) {
+          const tile = document.createElement("div");
+          tile.className = "tile";
+          tile.setAttribute("role", "gridcell");
+          const letter = submitted ? submitted[column] : current[column] || "";
+          tile.textContent = letter;
+
+          if (submitted) {
+            const state = letterState(submitted[column], column, answer);
+            tile.classList.add(state);
+            tile.setAttribute("aria-label", `${submitted[column]}, posição ${column + 1}: ${stateLabel(state)}`);
+            const symbol = document.createElement("span");
+            symbol.className = "tile-symbol";
+            symbol.setAttribute("aria-hidden", "true");
+            symbol.textContent = tileSymbols[state];
+            tile.append(symbol);
+          } else if (letter) {
+            tile.classList.add("filled");
+            tile.setAttribute("aria-label", `${letter}, posição ${column + 1}`);
+          } else {
+            tile.setAttribute("aria-label", `Posição ${column + 1}, vazia`);
+          }
+          row.append(tile);
+        }
+        board.append(row);
+      }
+      renderKeyboard();
+    }
+
+    function stateLabel(state) {
+      return { correct: "posição certa", present: "está na palavra em outra posição", absent: "não aparece na palavra" }[state];
+    }
+
+    function renderKeyboard() {
+      const states = new Map();
+      const answer = normalizeWord(activePuzzle.word);
+      for (const guess of guesses) {
+        [...guess].forEach((letter, index) => {
+          const state = letterState(letter, index, answer);
+          const previous = states.get(letter);
+          if (state === "correct" || (state === "present" && previous !== "correct") || !previous) states.set(letter, state);
+        });
+      }
+
+      keyboardRows.forEach((row) => {
+        row.replaceChildren();
+        row.dataset.row.split(" ").forEach((key) => {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "key";
+          button.textContent = key === "⌫" ? "Apagar" : key === "ENTER" ? "Enviar" : key;
+          if (key === "⌫" || key === "ENTER") button.classList.add("wide");
+          if (states.has(key)) button.classList.add(states.get(key));
+          button.disabled = isFinished;
+          button.setAttribute("aria-label", key === "⌫" ? "Apagar última letra" : key === "ENTER" ? "Enviar tentativa" : `Digitar ${key}`);
+          button.addEventListener("click", () => handleKey(key));
+          row.append(button);
+        });
+      });
+    }
+
+    function setMessage(text, kind = "") {
+      message.textContent = text;
+      message.dataset.kind = kind;
+    }
+
+    function handleKey(key) {
+      if (isFinished) return;
+      if (key === "ENTER") {
+        submitGuess();
+        return;
+      }
+      if (key === "⌫" || key === "BACKSPACE") {
+        currentGuess = currentGuess.slice(0, -1);
+        renderBoard();
+        setMessage(`Digite ${activePuzzle.word.length} letras e pressione Enter para enviar.`);
+        return;
+      }
+      if (/^[A-ZÇ]$/i.test(key) && currentGuess.length < activePuzzle.word.length) {
+        currentGuess += normalizeWord(key);
+        renderBoard();
+        setMessage(`${currentGuess.length} de ${activePuzzle.word.length} letras.`);
+      }
+    }
+
+    function submitGuess() {
+      const length = activePuzzle.word.length;
+      if (currentGuess.length !== length) {
+        setMessage(`Faltam ${length - currentGuess.length} letras para enviar.`, "error");
+        return;
+      }
+      guesses.push(currentGuess);
+      hasWon = currentGuess === normalizeWord(activePuzzle.word);
+      currentGuess = "";
+      isFinished = hasWon || guesses.length === 10;
+      renderBoard();
+
+      if (hasWon) {
+        setMessage(`Você acertou em ${guesses.length} ${guesses.length === 1 ? "tentativa" : "tentativas"}. A resposta era ${activePuzzle.word}.`, "success");
+      } else if (isFinished) {
+        setMessage(`Fim de jogo. A palavra era ${activePuzzle.word}.`);
+      } else {
+        setMessage(`Tentativa ${guesses.length} de 10 registrada.`, "success");
+      }
+
+      if (isFinished) {
+        shareButton.hidden = false;
+        saveResult();
+      }
+    }
+
+    function getStats() {
+      try {
+        return JSON.parse(localStorage.getItem("jogo-da-silva-stats")) || { played: 0, wins: 0, streak: 0, best: 0, completed: [] };
+      } catch {
+        return { played: 0, wins: 0, streak: 0, best: 0, completed: [] };
+      }
+    }
+
+    function saveResult() {
+      const stats = getStats();
+      if (stats.completed.includes(activePuzzle.id)) return;
+      stats.completed.push(activePuzzle.id);
+      stats.played += 1;
+      if (hasWon) {
+        stats.wins += 1;
+        stats.streak += 1;
+        stats.best = Math.max(stats.best, stats.streak);
+      } else {
+        stats.streak = 0;
+      }
+      try { localStorage.setItem("jogo-da-silva-stats", JSON.stringify(stats)); } catch { /* armazenamento local indisponível */ }
+    }
+
+    function shareText() {
+      const score = hasWon ? `${guesses.length}/10` : "X/10";
+      const grid = guesses.map((guess) => [...guess].map((letter, index) => shareSymbols[letterState(letter, index, normalizeWord(activePuzzle.word))]).join("")).join("\n");
+      return `PALAVRA DO DIA · ${activePuzzle.label} · ${score}\n${grid}\n\nJogo da Silva`;
+    }
+
+    async function shareResult() {
+      const text = shareText();
+      if (navigator.share) {
+        try {
+          await navigator.share({ text });
+          return;
+        } catch (error) {
+          if (error.name === "AbortError") return;
+        }
+      }
+      dialogTitle.textContent = "Compartilhar sem spoiler";
+      dialogContent.innerHTML = `<p>O resultado não inclui a palavra-resposta. Copie o texto abaixo para compartilhar.</p><textarea class="share-copy" readonly aria-label="Resultado sem spoiler"></textarea><button class="dialog-primary" type="button" id="copy-result">Copiar resultado</button>`;
+      dialogContent.querySelector("textarea").value = text;
+      dialogContent.querySelector("#copy-result").addEventListener("click", async () => {
+        const field = dialogContent.querySelector("textarea");
+        field.select();
+        try {
+          await navigator.clipboard.writeText(text);
+          setMessage("Resultado copiado sem revelar a resposta.", "success");
+        } catch {
+          setMessage("Texto selecionado: use Ctrl+C ou Copiar no dispositivo.");
+        }
+      });
+      dialog.showModal();
+    }
+
+    function openStats() {
+      const stats = getStats();
+      dialogTitle.textContent = "Suas estatísticas";
+      dialogContent.innerHTML = `<p>Dados guardados somente neste navegador.</p><div class="stats-grid"><div class="stat"><strong>${stats.played}</strong><span>jogos</span></div><div class="stat"><strong>${stats.played ? Math.round((stats.wins / stats.played) * 100) : 0}%</strong><span>acertos</span></div><div class="stat"><strong>${stats.streak}</strong><span>sequência atual</span></div></div><p>Melhor sequência: <strong>${stats.best}</strong> dia(s). Ranking e analytics não fazem parte deste protótipo.</p>`;
+      dialog.showModal();
+    }
+
+    function openArchive() {
+      dialogTitle.textContent = "Arquivo de desafios";
+      dialogContent.innerHTML = `<p>Escolha um desafio anterior para rejogar. A palavra aparece somente ao concluir.</p><div class="archive-list"></div>`;
+      const list = dialogContent.querySelector(".archive-list");
+      puzzles.forEach((puzzle) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "archive-item";
+        button.innerHTML = `<span><span class="archive-date">${puzzle.label}</span><br><span class="archive-detail">${puzzle.word.length} letras · 10 tentativas</span></span><span class="archive-action">Jogar</span>`;
+        button.addEventListener("click", () => {
+          activePuzzle = puzzle;
+          guesses = [];
+          currentGuess = "";
+          isFinished = false;
+          hasWon = false;
+          document.querySelector("#puzzle-date").textContent = puzzle.date;
+          document.querySelector("#word-size").textContent = `${puzzle.word.length} letras`;
+          shareButton.hidden = true;
+          setMessage(`Digite ${puzzle.word.length} letras e pressione Enter para enviar.`);
+          renderBoard();
+          dialog.close();
+          document.querySelector("#game-title").focus?.();
+        });
+        list.append(button);
+      });
+      dialog.showModal();
+    }
+
+    themeTabs.forEach((tab, index) => {
+      tab.addEventListener("click", () => selectTheme(tab, false));
+      tab.addEventListener("keydown", (event) => {
+        if (!["ArrowRight", "ArrowLeft", "Home", "End"].includes(event.key)) return;
+        event.preventDefault();
+        let nextIndex = index;
+        if (event.key === "ArrowRight") nextIndex = (index + 1) % themeTabs.length;
+        if (event.key === "ArrowLeft") nextIndex = (index + themeTabs.length - 1) % themeTabs.length;
+        if (event.key === "Home") nextIndex = 0;
+        if (event.key === "End") nextIndex = themeTabs.length - 1;
+        selectTheme(themeTabs[nextIndex], true);
+      });
+    });
+
+    function selectTheme(tab, moveFocus) {
+      const theme = tab.dataset.themeChoice;
+      document.body.dataset.theme = theme;
+      themeTabs.forEach((item) => {
+        const selected = item === tab;
+        item.setAttribute("aria-selected", String(selected));
+        item.tabIndex = selected ? 0 : -1;
+      });
+      document.querySelector("#prototype-view").setAttribute("aria-labelledby", tab.id);
+      document.querySelector(".round-label").textContent = `${themeTabs.indexOf(tab) + 1} / 03`;
+      if (moveFocus) tab.focus();
+    }
+
+    document.querySelectorAll("[data-panel]").forEach((button) => {
+      button.addEventListener("click", () => button.dataset.panel === "stats" ? openStats() : openArchive());
+    });
+    document.querySelector(".dialog-close").addEventListener("click", () => dialog.close());
+    dialog.addEventListener("click", (event) => { if (event.target === dialog) dialog.close(); });
+    shareButton.addEventListener("click", shareResult);
+
+    document.addEventListener("keydown", (event) => {
+      const interactiveTarget = event.target instanceof HTMLElement && event.target.closest("button, a, input, textarea, select, [contenteditable='true']");
+      if (dialog.open || interactiveTarget || event.ctrlKey || event.metaKey || event.altKey) return;
+      if (event.key === "Enter" || event.key === "Backspace") {
+        event.preventDefault();
+        handleKey(event.key === "Enter" ? "ENTER" : "BACKSPACE");
+      } else if (/^[a-zç]$/i.test(event.key)) {
+        handleKey(event.key);
+      }
+    });
+
+    renderBoard();
+  </script>
+</body>
+</html>
