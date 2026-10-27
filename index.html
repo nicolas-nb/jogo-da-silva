@@ -5,22 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Palavra do dia</title>
   <style>
-    :root {
-      --page: #f3efe4;
-      --surface: #fffdf8;
-      --surface-quiet: #ede7dc;
-      --ink: #25332d;
-      --muted: #5f6d66;
-      --line: #cdc8bc;
-      --accent: #b74e35;
-      --correct: #2e6e4f;
-      --present: #e1b85d;
-      --absent: #dadad2;
-      --focus: #1265a8;
-      --shadow: 0 14px 34px rgba(26, 35, 31, 0.09);
-      --tile-radius: 10px;
-      --panel-radius: 12px;
-      --field-radius: 8px;
       --body-font: "Segoe UI", Tahoma, sans-serif;
       --display-font: Georgia, "Times New Roman", serif;
     }
@@ -826,22 +810,8 @@
     <div class="dialog-content" id="modal-content"></div>
   </dialog>
 
-  <script>
-    const DAILY_WORDS = [
-      'JANELA', 'CIDADE', 'CASTELO', 'MELANCIA', 'BICICLETA', 'PASTEL', 'SILVESTRE', 'FLORESTA', 'MONTANHA',
-      'CAMINHO', 'LIVRO', 'SOMBRIO', 'PRIMAVERA', 'BOLA', 'PESCADOR', 'VITRINE', 'PEDRA', 'CINEMA',
-      'TRILHA', 'ARCO', 'TABUA', 'BOLSA', 'RAPAZ', 'FUTURO', 'AMARELO', 'COLINA', 'SORRISO', 'JARDIM',
-      'MUSEU', 'TARDE', 'PORTA', 'NUVEM', 'VITORIA', 'MALHA', 'ORQUESTA', 'SONHO', 'NAVE', 'PAISAGEM'
-    ];
-
-    const VALID_WORDS = new Set([
-      'JANELA', 'CIDADE', 'CASTELO', 'MELANCIA', 'BICICLETA', 'PASTEL', 'SILVESTRE', 'FLORESTA', 'MONTANHA',
-      'CAMINHO', 'LIVRO', 'SOMBRIO', 'PRIMAVERA', 'BOLA', 'PESCADOR', 'VITRINE', 'PEDRA', 'CINEMA',
-      'TRILHA', 'ARCO', 'TABUA', 'BOLSA', 'RAPAZ', 'FUTURO', 'AMARELO', 'COLINA', 'SORRISO', 'JARDIM',
-      'MUSEU', 'TARDE', 'PORTA', 'NUVEM', 'VITORIA', 'MALHA', 'ORQUESTA', 'SONHO', 'NAVE', 'PAISAGEM',
-      'LANTERNA', 'CADERNO', 'MALHADO', 'ARROZ', 'PAPEL', 'FESTA', 'AMIGO', 'RIO', 'ROCHA', 'ILHA', 'HISTORIA',
-      'GARRAFA', 'GRANDE', 'DIA', 'NOITE', 'SEMENTE', 'LAGO', 'BOTOES', 'ALVO', 'ESCOLA', 'TRABALHO', 'MIRANTE', 'FOLHA'
-    ]);
+  <script type="module">
+    import { evaluateGuess, getDailyWord, normalizeWord as stripAccents, toLocalDateKey, VALID_WORDS } from './game-logic.mjs';
 
     const STORAGE_KEY = 'palavra-do-dia-state-v1';
     const keyboardLayout = [
@@ -872,17 +842,6 @@
       archive: []
     };
 
-    function stripAccents(value) {
-      return String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
-    }
-
-    function toLocalDateKey(date = new Date()) {
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
-      return `${year}-${month}-${day}`;
-    }
-
     function getPuzzleDate(date = new Date()) {
       const fmt = new Intl.DateTimeFormat('pt-BR', {
         weekday: 'long',
@@ -891,15 +850,6 @@
         year: 'numeric'
       });
       return fmt.format(date).replace(/^./, c => c.toUpperCase());
-    }
-
-    function getDailyWord(date = new Date()) {
-      const key = toLocalDateKey(date);
-      let hash = 0;
-      for (let i = 0; i < key.length; i += 1) {
-        hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
-      }
-      return DAILY_WORDS[hash % DAILY_WORDS.length];
     }
 
     function getStats() {
@@ -973,38 +923,6 @@
         console.warn('Não foi possível restaurar o estado do jogo', error);
         return false;
       }
-    }
-
-    function evaluateGuess(guess, answer) {
-      const normalizedGuess = stripAccents(guess).split('');
-      const normalizedAnswer = stripAccents(answer).split('');
-      const result = Array(normalizedGuess.length).fill('absent');
-      const remaining = {};
-
-      for (let i = 0; i < normalizedAnswer.length; i += 1) {
-        if (normalizedGuess[i] === normalizedAnswer[i]) {
-          result[i] = 'correct';
-        } else {
-          remaining[normalizedAnswer[i]] = (remaining[normalizedAnswer[i]] || 0) + 1;
-        }
-      }
-
-      for (let i = 0; i < normalizedGuess.length; i += 1) {
-        if (result[i] === 'correct') continue;
-        const letter = normalizedGuess[i];
-        if (remaining[letter] && remaining[letter] > 0) {
-          result[i] = 'present';
-          remaining[letter] -= 1;
-        }
-      }
-
-      return result;
-    }
-
-    function letterState(letter, index, answer) {
-      const guess = letter;
-      const result = evaluateGuess(guess, answer);
-      return result[0] || 'absent';
     }
 
     function renderBoard() {
